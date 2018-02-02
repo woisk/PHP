@@ -1,0 +1,208 @@
+前提条件： 每个管理员拥有单一的角色！
+
+角色表：
+CREATE TABLE `yt_system_role` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,--角色id
+  `name` varchar(20) DEFAULT NULL,--角色名称
+  `type` int(11) DEFAULT NULL,--角色类型   1：前台用户角色  2：后台用户角色
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB CHARSET=utf8
+
+权限表：（其实也就是菜单的集合）
+CREATE TABLE `yt_system_menu` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,--权限id
+  `parentid` int(11) DEFAULT NULL,--父类id
+  `name` varchar(20) DEFAULT NULL,--权限名称
+  `url` varchar(100) DEFAULT NULL,--链接地址
+  `icon` varchar(100) DEFAULT NULL,--图标
+  `level` int(11) DEFAULT NULL,--用来做无限极分类用的
+  `sort` int(11) DEFAULT NULL,--排序使用
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB CHARSET=utf8
+
+角色和权限中间表：
+CREATE TABLE `yt_system_role_rights` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,--主键id
+  `role_id` int(11) DEFAULT NULL,--角色id
+  `menu_id` int(11) DEFAULT NULL,--权限id
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB CHARSET=utf8
+
+
+其实就是角色表  权限表  然后就是角色对应哪些权限呢  就又多了个中间表  因为权限和角色之间是多对多的关系！
+
+管理员表：
+       在管理员表当中要新建一个字段 比如叫做type_id  用来表示该用户所属于的角色 或者叫role_id;
+
+管理员拥有单一角色的功能表的设计就是上边讲到的！
+===========================================================================
+
+下边讲如何在代码当中实现：
+第一步：
+涉及到登陆
+登陆流程当中：
+           A 判断验证码 
+           B 根据用户名判断用户是否存在 或者判断该用户账户是否被禁用！
+           C 如果用户存在以及没有被禁用 那么我们需要判断他的角色 因为我们在设计表的时候已经新建表yt_system_role的时候建立了一个type表  1：前台  2：后台    判断用户的角色是前台角色还是后台角色 如果不是后台角色也就是type != 2 那么提示错误信息 终止程序！
+            D 判断用户密码是否正确；在判断的时候不要忘记加上密钥 更加的安全！
+
+第二步：
+按照道理来说 我们上边的验证都通过了 就应该直接跳转到首台界面的首页  但是不同的用户角色不同那么权限不同，权限不同那么现实的菜单也就不同；所以在显示后台界面之前我们需要读取出这个用户所属于的角色的全部的权限  也就是说这个角色进入到后台首页能够看到的菜单有哪些？
+
+拿着用户表记录里面的type_id角色id 就可以知道是是角色  然后通过这个角色的id判断出这个角色对应的权限  从而获取到该用户所有的权限信息；
+
+//比如$role_id 就是传递过来的角色的id; 我们在判断该角色拥有哪些权限的时候需哟一个特俗的判断就是超级管理员   所以我们需要做一个判断就是  我们需要在角色表当中规定超级管理员的id = 1 如果传递过来的$role_id = 1 那么就拥有全部的权限 也就是可以看到所有的菜单！
+
+public function get_menus($role_id=0)
+{
+   $sql="";
+   //超级管理员拥有所有的权限！
+   if($role_id == 1)
+      $sql="SELECT id,parentid,name,url,icon,level FROM ".$this->db->dbprefix."system_menu ORDER BY sort ASC,id ASC";
+   else
+          $sql="SELECT id,parentid,name,url,icon,level FROM ".$this->db->dbprefix."system_menu WHERE id IN(SELECT menu_id FROM ".$this->db->dbprefix."system_role_rights WHERE role_id = $role_id) ORDER BY sort ASC,id ASC";
+       $query=$this->db->query($sql);
+   $result = $query->result_array();
+       return !empty($result) ? $result : array(); 
+   }
+
+查询出来的结果一定会是一个二维数组  但是如何在页面当中展现呢？
+
+$this->user->_menu 表示查询出来的全部的菜单；
+$m['level'] = 1是一个限制条件 表示他是父类 
+两层foreach循环  $m2['parentid'] == $m['id'] 保证了父子关系的呈现！
+至于js效果自己去找吧！ 操！
+<?php 
+   $menu_list='';
+   foreach($this->user->_menu as $m)
+   {
+      if($m['level'] == 1)
+      {
+         $menu_list .='<li><a class="a" href="'.$m['url'].'"><img src="'.$m['icon'].'" height="26" /><b>'.$m['name'].'</b></a><dl>';
+         foreach($this->user->_menu as $m2)
+         {
+            if($m2['parentid'] == $m['id'])
+            {
+               $menu_list.='<dd><a href="'.$m2['url'].'" target="c"><img src="'.$m2['icon'].'" />'.$m2['name'].'</a></dd>';
+            }
+         }
+         $menu_list .='</dl></li>';
+      }
+   }
+   echo $menu_list;
+?>
+
+
+
+分析表和表之间的关联关系：
+用户表的type_id 角色id     --------------------    角色表当中的id 
+角色表当中的id             --------------------    权限角色中间表当中的role_id
+权限表当中的id             --------------------    权限角色中间表当中的menu_id（其实也叫菜单id）
+
+RBAC权限就是这么一个流程！
+
+
+前提条件： 每个管理员拥有多个的角色！
+
+                                                                   RBAC权限管理（总结）
+
+功能需求分析:
+1.  权限管理（无限级） 【一个权限可以被多个角色拥有】
+2.  角色管理（可以把权限分配给这个角色）【一个角色可以拥有多个权限】【一个角色可以有多个管理员】
+3.  管理员管理（可以指定管理员属于哪些角色）【一个管理员可以同时属于多个角色】
+4.  后台左侧只显示当前登录的管理员有权限访问的按钮
+5.  超级管理员（id=1）拥有所有页面，普通管理员只能访问分配了权限的页面
+
+最重要的就是在数据库的表结构上:
+第一：得有权限表privilege表  包括id  权限名称  父类权限的pid(因为要做无限极的权限分类)  权限对应的model、controller,action 三个字段（表示拥有这个权限可访问的界面） 一共是需要五个字段；
+第二：得有角色表  角色id  角色名称 两个字段；
+第三：角色拥有哪些权限呢？一个角色可以拥有多个权限 一个权限可以被多个角色拥有  所以 权限表和角色表之间是多对多的关系  如果是多对多的关系那么就需要建一个中间表 起名叫做php34_role_privilege表  在这个表里面只需要写角色的id和权限的id即可  通过这张表就把权限和角色联系到了一起 ；
+第四:需要一张管理员表  这个表里面有用户名 密码 等信息，
+第五:有个管理员表 我们需要知道管理员属于哪个角色？ 一个管理员可以拥有多个角色 一个角色可以被多个管理员拥有  所以管理员和角色表之间是多对多的关系，所以此处需要建立第三章表php34_admin_role   字段只需要admin表的id 和 角色表 的id 即可；
+
+通过以上五张表就完成了RBAC数据库表结构的设计   mysql代码如下：
+
+########################## RBAC ################################
+DROP TABLE IF EXISTS php34_privilege;
+CREATE TABLE php34_privilege
+(
+    id smallint unsigned not null auto_increment,
+    pri_name varchar(30) not null comment '权限名称',
+    module_name varchar(10) not null comment '模块名称',
+    controller_name varchar(10) not null comment '控制器名称',
+    action_name varchar(10) not null comment '方法名称',
+    parent_id smallint unsigned not null default '0' comment '上级权限的ID，0：代表顶级权限',
+    primary key (id)
+)engine=MyISAM default charset=utf8 comment '权限表';
+
+DROP TABLE IF EXISTS php34_role_privilege;
+CREATE TABLE php34_role_privilege
+(
+    pri_id smallint unsigned not null comment '权限的ID',
+    role_id smallint unsigned not null comment '角色的id',
+    key pri_id(pri_id),
+    key role_id(role_id)
+)engine=MyISAM default charset=utf8 comment '角色权限表';
+
+DROP TABLE IF EXISTS php34_role;
+CREATE TABLE php34_role
+(
+    id smallint unsigned not null auto_increment,
+    role_name varchar(30) not null comment '角色名称',
+    primary key (id)
+)engine=MyISAM default charset=utf8 comment '角色表';
+
+DROP TABLE IF EXISTS php34_admin_role;
+CREATE TABLE php34_admin_role
+(
+    admin_id tinyint unsigned not null comment '管理员的id',
+    role_id smallint unsigned not null comment '角色的id',
+    key admin_id(admin_id),
+    key role_id(role_id)
+)engine=MyISAM default charset=utf8 comment '管理员角色表';
+
+DROP TABLE IF EXISTS php34_admin;
+CREATE TABLE php34_admin
+(
+    id tinyint unsigned not null auto_increment,
+    username varchar(30) not null comment '账号',
+    password char(32) not null comment '密码',
+    is_use tinyint unsigned not null default '1' comment '是否启用 1：启用0：禁用',
+    primary key (id)
+)engine=MyISAM default charset=utf8 comment '管理员';
+INSERT INTO php34_admin VALUES(1,'root','bafcbdc80e0ca50e92abe420f506456b',1);
+
+（关键字：连表查询 left join）                                                                  
+# 有以上五张表之后写SQL取出管理员ID为3的管理员所拥有的所有的权限
+
+# 流程：1. 先取出3这个管理员所在的角色ID 
+# SELECT role_id FROM  php34_admin_role WHERE admin_id=3
+# 2. 再取出这些角色所拥有的权限的ID 
+# SELECT pri_id FROM php34_role_privilege WHERE role_id IN (1上面的结果)
+# 3. 再根据权限ID取出这些权限的信息
+# SELECT * FROM php34_privilege WHERE id IN(2的结果)
+# 最终：
+# SELECT * FROM php34_privilege WHERE id IN(
+#   SELECT pri_id FROM php34_role_privilege WHERE role_id IN (
+#       SELECT role_id FROM  php34_admin_role WHERE admin_id=3
+#   )
+# )
+
+
+# 写法二、
+# SELECT a.*
+#   FROM php34_privilege a,php34_role_privilege b,php34_admin_role c
+#    WHERE c.admin_id=3 AND b.pri_id=a.id AND b.role_id=c.role_id
+
+
+# 写法三、  (通过  left join   被链的表  ON  条件 )
+通过left join  必须要有一个中间表 比如这里的中间表就是php34_role_privilege  命名为a  那么接下来的联查都是经过a表来进行的 比如接下来 
+LEFT JOIN php34_privilege b ON a.pri_id=b.id   （a.pri_id=b.id）
+LEFT JOIN php34_admin_role c ON a.role_id=c.id  （a.role_id=c.id）  因为a表示中间表 所以都是a表当中的某个字段等于其他表当中的某个字段；
+
+
+# SELECT b.*
+#  FROM php34_role_privilege a
+#   LEFT JOIN php34_privilege b ON a.pri_id=b.id
+#   LEFT JOIN php34_admin_role c ON a.role_id=c.id
+#    WHERE c.admin_id=3
