@@ -1,0 +1,60 @@
+<?php
+class Person {
+    // 下面是人的成员属性
+    var $name;  //人的名子
+    var $sex;   //人的性别
+    var $age;   //人的年龄
+
+    // 定义一个构造方法参数为属性姓名$name、性别$sex和年龄$age进行赋值
+    function __construct($name, $sex, $age) {
+        $this->name = $name;
+        $this->sex = $sex;
+        $this->age = $age;
+    }
+
+    // 这个人可以说话的方法, 说出自己的属性
+    function say() {
+        echo "我的名子叫：" . $this->name . " 性别：" . $this->sex . " 我的年龄是：" . $this->age;
+    }
+
+    function aa()
+    {
+        echo get_class($this);
+        echo $this->school;
+    }
+
+}
+
+class Student extends Person {
+    // 下面是人的成员属性
+    var $school;    // 学生所在学校的属性
+
+    // 定义一个构造方法参数为属性姓名$name、性别$sex 和年龄$age 进行赋值
+    function __construct($name = "", $sex = "", $age = "", $school = "") {
+        $this->name = $name;
+        $this->sex = $sex;
+        $this->age = $age;
+        $this->school = $school;
+    }
+
+    // 这个人可以说话的方法, 说出自己的属性
+    function say() {
+        echo "我的名字叫：" . $this->name . " 性别：" . $this->sex . " 我的年龄是：" . $this->age . "<br />";
+    }
+
+    // 这个学生学习的方法
+    function study() {
+        echo "我的名字叫：" . $this->name . " 我正在" . $this->school . "学习<br />";
+    }
+}
+$arr = new Student('胡绍良','男','28','山东济南大学');
+$arr->aa();
+?>
+
+现在是Student继承了Pserson  不用多说 Pserson当中的成员属性和方法都被继承到了Student类当中去了  
+但是现在我们在Student类里面新建了属性school 并且在实例化的时候我们通过构造方法为成员属性都赋值了；
+现在我们把重点放到Pserson类里面的aa()方法 
+get_class($this) 这里的$this表示的是当前实例化的对象 因为我们的student继承了person  所以这里的get_class($this)也就是student
+所以我们在aa（）方法当中$this->school；也是一样可以在父类当中访问到子类当中的成员属性方法的值；
+
+总结一句话：在父类当中我们可以很轻松的访问到子类当中的成员属性的值 也可以设置啊！
