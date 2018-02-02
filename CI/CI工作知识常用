@@ -1,0 +1,566 @@
+1.
+$this->input->is_cli_request()：是否是在命令行模式下
+$this->input->ip_address()：获取当前登陆用户的ip地址
+
+ if(!$this->input->is_cli_request()){
+      $this->_ip = $this->input->ip_address();
+  }
+
+2.
+CI里面的limit() 第一个参数是去几条 第二个参数是从第几条开始如果第二个参数是0表示从第一条开始取；
+limit（2,1）  1表示从第二条记录开始取  往外取2条记录！
+
+3.
+$this->db->dbprefix
+获取表前缀名称；
+
+4.
+get_class($this)
+获取到当前类的名称；如果是子类继承父类 那么返回的是子类的类名称
+
+5.
+分页
+    //装载类文件
+    $this->load->library('pagination');
+    //每一页显示的数据条数的变量
+    $page_size=4;
+    
+    $this->load->helper('url');//分页一定要用它！！！！！！
+    $config['base_url']=site_url("admin/Contacts/index/99/756b1vb2682d/page/");///url地址
+    $config['uri_segment']=7;//分页的偏移量查询在那一段上面  这个很重要哦
+    $config['num_links'] = 2;
+    
+    $config['full_tag_open'] = '<div class="layui-box layui-laypage layui-laypage-default" id="layui-laypage-14">';
+    $config['full_tag_close'] = '</div>';
+    $config['first_tag_open'] = '<span class="my">';
+    $config['first_tag_close'] = '</span>';
+    $config['cur_tag_open'] = '<span class="layui-laypage-curr"><em class="layui-laypage-em"></em><em>';
+    $config['cur_tag_close'] = '</em></span>';
+    $config['last_tag_open'] = '<span class="my">';
+    $config['last_tag_close'] = '</span>';
+    
+    //每一页显示的数据条数
+    $config['per_page']=$page_size;
+    $config['next_link']= '下一页';
+    $config['prev_link']= '上一页';
+    $config['last_link'] = '末页';
+    $config['first_link'] = '首页';
+    
+    $config['total_rows']=$this->db->count_all('user');//总的记录数
+    $this->pagination->initialize($config);
+    $data['links'] = $this->pagination->create_links(); 
+    $offset=intval($this->uri->segment(7));//用intval使空格转0，显示出来0 
+    
+    $data['user_list3'] = $this->user->all_mation($offset,$page_size);//查询的时候一定要放这两个参数进去  类似TP当中的哦
+
+6.
+获取uri当中的第几段 www.baidu.com/admin/user/index  第一段是admin第二段是user第三段是index
+$this->uri->segment(6);
+
+7.
+$this->input->post('username',TRUE);
+
+8.
+我们可以在视图当中直接使用base_url();
+  <?PHP echo base_url('admin/login/index');  ?>
+返回的结果为:http://bg.cn/admin/login/index
+
+9.
+转义字符串  以前是hushaoliang 转义之后会变成 'hushaoliang' 在插入到数据库当中的时候会比较有作用
+$this->db->escape(hushaoliang')；
+
+10.
+返回受影响的行数：
+$this->db->affected_rows()
+
+获取最后一条执行的sql语句：
+$this->db->last_query()
+
+11.
+读取配置文件里面的内容：  item()当中写我们要读取的配置项
+$lang = $this->config->item('language');
+
+12.
+载入model模型  第三个参数表示自动加载 只有在用到的时候才回去加载 这样可以节省资源
+$this->load->model('wechat/Integral_goods','goods',TRUE);
+
+13.
+count_all_results（）括号当中直接放入表名称 表示获取到结果集当中的总的记录数量
+$this->db->where('id >',16);
+$num = $this->db->count_all_results('Integral_goods');
+
+14.
+count_all() 获取表当中的总的记录数  （加上where条件无效）
+$num = $this->db->count_all('Integral_goods');
+print_r($num);die;
+
+15.
+表单验证参考CI手册学习总结
+
+16.
+在ci当中视图的呈现和表单的提交也是一样可以写到一个控制器的方法里面的  但是不同的是：
+我们之前都是判断是否是$_POST提交 然后根据返回true或者false进行表单验证以及视图的呈现 
+但是在CI当中我们最好是这样：
+视图的呈现和表单的提交都是提交到一个地方  然后在方法当中首先验证数据  如果验证数据失败 那么返回的是视图呈现   如果验证数据成功  那么进行表单数据的插入操作   
+
+因为这样做的好处就是 加入我们想呈现视图  那么验证发现全部错误 那么直接呈现视图  加入我们想进行表单数据提交入库  但是如果验证有错 那么也是视图呈现  并且会保留我们之前填写进去的那些表单的值；
+
+
+
+17.
+//图片上传功能
+表单当中一定要加enctype="multipart/form-data"
+<form id="form" method="post" enctype="multipart/form-data">
+控制器当中：
+$config['upload_path']      = './uploads/temp/';
+$config['allowed_types']    = 'gif|jpg|png';
+$config['max_size']     = 1024*100;
+$config['file_name'] = date('ymd',time()).rand(100000,999999);//重新命名文件名
+$this->load->library('upload', $config);
+if($this->upload->do_upload('img')){
+    $up = $this->upload->data();//所有的关于图片上传成功后的数据
+    //文件保存路径  前边不要加点直接入库即可
+    $this->goods->img = '/uploads/temp/'.$up['file_name'];
+}
+
+18.
+log_message（‘error’,‘出现了错误哦!’）  设置log日志信息
+
+19.
+session的设置和读取
+
+读取session：
+$name = $_SESSION['name'];或者
+$name = $this->session->name 或者
+$name = $this->session->userdata('name'); 或者
+
+
+设置session：
+
+如果你想一次只添加一个值，set_userdata() 也支持这种语法: 
+$this->session->set_userdata('some_name', 'some_value');
+或者使用
+$this->session->name = 
+
+你也可以一次性传递一个数组进去：
+$newdata = array(
+    'username'  => 'johndoe',
+    'email'     => 'johndoe@some-site.com',
+    'logged_in' => TRUE
+);
+
+$this->session->set_userdata($newdata);
+
+判断一个session是否存在：
+isset($_SESSION['username'])
+或者也可以使用：
+$this->session->has_userdata('username');
+
+销毁session
+unset($_SESSION['username']); //删除单个session的值
+//删除多个session值
+unset(
+    $_SESSION['some_name'],
+    $_SESSION['another_name']
+);
+
+或者使用
+$this->session->unset_userdata('username');//删除单个
+//删除多个session的值
+$array_items = array('username', 'email');
+$this->session->unset_userdata($array_items);
+
+20.
+          //cookie辅助函数
+        //$this->load->helper('cookie');
+        //设置cookie
+        // set_cookie('username','胡绍良',60);
+        // set_cookie('password','123456',60);
+        //访问cookie
+        // $username = get_cookie('username');
+        //删除cookie
+        //delete_cookie('password');
+
+21.
+表单验证提示信息在CI框架当中可以修改展示方法  位置是在application/language/zh-cn/form_validation_lang.php当中进行修改
+
+22.
+CI 框架当中的跳转也使用redirect('/admin/login')；
+if(strcasecmp($auth_code,$code )!=0 )
+{
+   $_SESSION['msg']='验证码错误!';
+   redirect('/admin/login');
+}
+
+23.
+框架当中第三方类库的加载和使用：
+比如我们要使用一个验证码类库，
+我们可以把这个类库放在application/libraries/验证码类库名称.php；
+如何使用呢？
+在控制器当中需要先要加载$this->load->library('直接写类库名称 不带php 即可');
+然后你就可以使用里面的方法来完成各种操作了！
+
+比如：
+public function auth_code()
+{
+    $this->load->library('authcode'); //这里用到的类库直接去CI当中使用的验证码类当中去下载即可！
+//至于下边的属性方法啥意思去类当中找找就知道是什么意思了！
+    $this->authcode->noiseNumPix = 200;
+    $this->authcode->showBorder = false;
+    $this->authcode->session_fix = self::SESSION_FIX_VERIFY_CODE;
+    $this->authcode->show();
+    return true;
+}
+
+24.
+uri_string();
+返回包含该函数的页面的 URI 分段。例如，如果你的 URL 是:
+http://some-site.com/blog/comments/123
+
+函数将返回:
+blog/comments/123
+
+25.
+ci源码当中我们会经常使用到$this->user->id  这个$this->user出现的频率是很高的  现在就详细讲讲他的由来：
+我们知道所有的控制器都必须继承MY_Controller   在这个基类控制器当中的构造方法当中加载了user模型； 但是只是单纯的加载了user模型而已；按道理来说我们可以去在任何继承了基类控制器的控制器当中使用这个user 模型； 那为什么会可以在控制器当中直接使用$this->user->id 呢？ 
+是因为在基类的控制器的构造方法当中有这么一个方法is_loginning()  在这个方法当中有一句$this->user->retrieve($userid)  括号当中的$userid就是登陆了用户的id值；  通过retrieve()方法把记录当中的值赋值个了成员属性当中；
+所以我们才可以在其他继承了基类控制器的其他控制器当中直接使用$this->user->username这样的写法； 
+当然也可以直接在控制器当中使用！
+
+26.
+ci当中的下载操作：
+
+public function download()
+    {  
+        $rooturl = $_SERVER['DOCUMENT_ROOT'];//输出服务器根目录   /home/bae/app/
+        $fileurl = "download/wechat/aa.docx";
+        $address = $rooturl.$fileurl;
+        $filename = "测试下载用的文件数据.docx";//下载的时候展示在用户面前的文件名称
+        if(file_exists($address)){
+            $this->load->helper('download');
+            force_download($filename, file_get_contents($address));//第二个参数表示获取到要下载的文件内容
+        }else{
+            echo "人生!怎能扯淡!";
+        }
+    }
+
+19.
+查询表记录
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26$this->db->select(); //选择查询的字段
+$this->db->select_max();
+$this->db->select_min();
+$this->db->select_avg();
+$this->db->select_sum();
+$this->db->from(); //选择表名
+$this->db->join();
+$this->db->get(); //得到查询结果
+$this->db->get_where();
+$this->db->where();
+$this->db->or_where();
+$this->db->where_in();
+$this->db->or_where_in();
+$this->db->where_not_in();
+$this->db->or_where_not_in();
+$this->db->like();
+$this->db->or_like();
+$this->db->not_like();
+$this->db->or_not_like();
+$this->db->group_by();
+$this->db->distinct();
+$this->db->having();
+$this->db->or_having();
+$this->db->order_by();
+$this->db->limit();
+$this->db->count_all_results();
+增加表记录
+1$this->db->insert();
+更改表记录
+1
+2$this->db->set();
+$this->db->update();
+删除表记录
+1$this->db->delete();
+清空表记录
+1
+2$this->db->empty_table();
+$this->db->truncate();
+缓存部分
+1
+2
+3$this->db->start_cache()
+$this->db->stop_cache()
+$this->db->flush_cache()
+结果结果集
+1
+2
+3
+4
+5
+6
+7result() //返回对象数组
+result_array() //返回二维数组
+row() //返回一个对象    只去结果集当中的第一条记录
+row_array() //返回一维数组  也是只取结果集当中的第一条记录
+num_rows() //返回查询的行数
+num_fields() //返回查询结果的字段数
+free_result() //释放查询所占的资源内存
+辅助查询函数
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10$this->db->insert_id() //获取刚刚插入的id
+$this->db->affected_rows() //修改或插入影响的行数
+$this->db->count_all(); //统计记录的总条数 这一函数加入where条件无效
+$this->db->last_query(); //最后一条执行的sql语句
+//注意以下两个函数仅返回sql语句 不执行sql语句
+$data = array('name' => $name, 'email' => $email, 'url' => $url);
+$str = $this->db->insert_string('table_name', $data);
+$data = array('name' => $name, 'email' => $email, 'url' => $url);
+$where = "author_id = 1 AND status = 'active'";
+$str = $this->db->update_string('table_name', $data, $where); //返回正确格式的更
+
+==========================================================================================================================================================
+                                                                      框架源码总结
+A:
+查询的时候我们会涉及到记录总数量  以及 全部记录
+记录总数量：get_search_nums()方法
+全部记录：get_search_list()方法
+要使用上边的两个方法进行查询 必须要实现查询前置操作prepare_search（）方法
+
+过程:引入model类 model类继承MY_model  在model类当中必须要存放prepare_search()方法用来获取表名称；在控制器当中查询的时候要设置$wheres[]数组  元素包括$where['where']=$where  $wheres['like']=$like 等 可以在get_search_nums()方法以及get_search_list()方法当中扩展
+
+1.
+get_search_nums()方法  存放在MY_model类里面
+使用方法：
+$this->load->model('goods_list','goods',TRUE);//goods_list继承MY_model类
+$this->goods->get_search_nums($wheres)
+
+注意用这个方法的前提是：
+                     $where['status>']=0;//where条件数组形式的
+                     $like['name'] = '%hsl%'; 
+                     $wheres['where']= $where;//必须赋值给$wheres['where']
+                     $wheres['like']=$like;//必须赋值给$wheres['like']
+                     更多查询条件可以去get_search_nums()当中扩展
+另外因为在该方法当中用到了表名称 所以我们需要在我们新建的类里面放这么一个方法：
+
+//prepare_search实现了父类当中的该方法 引用传参返回当前我们在modle模型当中设置的常量表名称；
+protected function prepare_search(&$table_name)
+{
+    $table_name = self::TABLE_NAME;
+    return TRUE;
+}
+
+
+2.
+c方法  存放在MY_model类里面
+第一个参数是查询条件 : 和上边第一个函数类似 必须写在$wheres[]数组当中 最好是数组形式的
+$where['status >']=0;
+$wheres['where'] = $where;
+第二个参数是从第几条开始查询 分页的时候用的比较多 其他时候也可以用
+第三个参数是查多少条
+使用方法：
+$this->load->model('goods_list','goods',TRUE);//goods_list继承MY_model类
+$this->goods->get_search_list($wheres,$offset,$page_size);
+备注：
+在get_search_list()方法当中也同样用到了prepare_search()方法; 介绍参考第1条;
+
+
+3.
+上边讲的都是根据条件进行查询 这里我们讲一个根据id进行查询的案例：
+
+public function editGoods($id = '')
+{
+    //不存在要修改的id那么就报错error; 此处没有采用ajax
+    if($id == ''){
+        echo "error";die;
+    }
+//载入model模型类
+    $this->load->model('wechat/Integral_goods','goods',TRUE);
+//调用retrieve()方法 传递id值进去就获取到了id的整条记录  这样我们就可以在视图当中直接使用$this->goods->name；直接读取值即可！仅限于单挑记录使用；
+    $this->goods->retrieve($id);
+    if($this->goods->id < 1)
+    {
+        echo 'error';
+        exit;
+    }
+    $this->load->view('admin/wechat/editgoods');
+}
+
+4.
+第3点是按照id 来进行查找的  并且MY_model类里面的retrieve() 方法只是单纯的按照id来进行的查询  然后把结果赋值给了model模型里面的成员属性；但是这样太局限性了，因为只能通过按照id来进行查询找到一条记录  但是如果我们想要按照name来进行查询又该怎么办呢？  我们知道就算是按照id来进行查询也都是在要用到的model里面来实现retrieve()方法；   所以如果我们要使用name来进行查询 那么我们可以单独在model模型当中创建一个retrieve_name()类；在这个类里面我们只需要修改一下要查询的字段就行了！
+/**
+   * 根据手机号获取用户信息
+   */
+  public function retrieve_phone()
+  {
+   if (empty($this->phone))
+       {
+           log_message(parent::ERROR_LEVEL, "Missing input parameters--" . get_class($this));
+           return false;
+       }
+
+       $result = $this->db->select('*')
+               ->where('name', $this->phone)  //我们只需要改这么一个地方就可以了  只是修改查询的条件而已
+               ->limit(1)
+               ->get(self::TABLE_NAME);   
+       if($result->num_rows() > 0)
+       {
+           $this->result_load($result->row());            
+           $result->free_result();
+
+           if(!$this->isEmpty())
+               return true;
+           else
+               return false;
+       }
+       else
+       {
+           $result->free_result();
+           return false;
+       }
+   }
+
+
+
+B:
+插入数据
+model模型必须继承MY_model类； 然后在model类里面写全和数据库对应的字段名称（除了四个必须的字段不用写包括id status addtime addip）
+
+使用：
+第一步：
+直接引入model模型 然后为模型里面的成员属性赋值（表单提交上来的值）即可！
+$this->load->model('wechat/Integral_goods','goods',TRUE);
+$this->goods->name=$this->input->post('name',TRUE);
+$this->goods->stock=$this->input->post('stock',TRUE);
+$this->goods->integral=$this->input->post('integral',TRUE);
+$this->goods->extime=$this->input->post('extime',TRUE);
+$this->goods->unit=$this->input->post('unit',TRUE);
+//直接调取MY_model类里面的insert()方法即可；
+$this->goods->insert();
+
+第二步：
+这里就涉及到insert()方法内部的实现了；
+①prepare_insert（）方法 这个方法是在实现操作之前的方法  也可以称之为前置操作方法；
+该方法必须注意的几点：
+Ⅰ 我们必须要在自己的model模型里面去实现这个方法 因为MY_model当中只是单纯的返回了false;
+Ⅱ 在我们的model比如是user_model当中我们必须要在这个方法当中返回当前我们要操作的表的名称 通常是常量来代替表名称
+Ⅲ 因为他是前置钩子操作  所以我们可以对要插入到数据库或者说要修改的数据 进行前置的一些处理 比如处理时间戳格式等 
+
+②prepare_insert_fields（）方法 
+这个方法我们是在MY_model类当中实现的 所以我们不用在自己的model类当中去实现它 它的主要作用是设置那些需要修改的字段的值；
+
+③make_table_name（）方法
+因为我们上边已经在前置操作方法当中返回了要操作的表  我们通过make_table_name方法来给表加上表前缀； 这个方法是在MY_model类当中实现的 所以我们没有必要在我么自己的model当中去实现它；
+
+④post_insert（）方法  
+该方法是在执行完insert（）操作语句之后的操作 也可以理解车后置操作 我们可以在插入数据完成之后做一些处理 比如推送时间等；
+
+
+C：
+更该数据
+更改数据的时候一定是有一个id值传递过来的  我们根据这个id值通过retrieve（）方法可以把这条记录从数据库当中查出并且为我们在model模型当中写的成员属性赋值；
+然后我们可以通过   $this->我们设置的成员属性 = “” 来改变这个成员属性的值
+
+$this->goods->retrieve($this->input->post('id',TRUE));//获取所有修改之前的对象里面的成员属性及对应值；
+//为对象赋值之后首先要检测合法性
+if($this->goods->id == '' || $this->goods->id < 1)
+{
+    exit("error");
+}
+//修改成员属性的值
+$this->goods->name=$this->input->post('name',TRUE);
+$this->goods->stock=$this->input->post('stock',TRUE);
+$this->goods->integral=$this->input->post('integral',TRUE);
+$this->goods->extime=strtotime($this->input->post('extime',TRUE));
+$this->goods->unit=$this->input->post('unit',TRUE);
+$this->goods->update();//更新数据操作
+
+那么接下来我们就可以去分析update()方法去了：
+通过查看update()方法我们发现必须要实现的方法有：
+prepare_update（）方法   相当于前置操作
+post_update（）方法      相当于后置操作
+
+其中还涉及到的方法有：
+prepare_update_fields（）方法  这个方法比较重要 比较出来了我们要更新的哪些字段；这个方法不用实现  存在于MY_model类里面；详情参考下边的代码注释：
+
+ protected function prepare_update_fields()
+    {
+        //再次验证是否给$id赋值
+        if($this->isEmpty())
+        {
+            return false;
+        }
+        //获取当前的model类名称比如:User_ceshi_model
+        $className = get_class($this);
+        //实例化当中model类
+        $this->_original = new $className();
+        
+        /*
+        *这个地方是比较有意思的
+        *$this->_originl非对象属性重新new出来一个对象给了它；  这是属于一个新的对象  我们是可以new出来很多对象的！记住了 这是一个新的对象
+        *$this->_original->retrieve()表示给这个对象里面的成员属性赋值  记住这个对象是单独的  不会影响我们实例化的其他的对象；比如本对象里面的$this->name是不会受到新的对象对属性值改变的影响的；
+        *这样做是为了在下边的代码当中进行比对 比对出哪些值做了更新操作  然后生成sql语句进行更新数据库操作
+        */
+        if(!$this->_original->retrieve($this->id))
+        {
+            return false;
+        }
+        //_updat_fields表示的是要操作的字段的名称和值  数组形式
+        $this->_update_fields = array();
+        //get_object_vars()表示是把对象里面的属性名称作为键 值为值  可以传递一个一维对象形式的数组或者直接传一个实例化好了的对象  这里就是传递了一个对象进去
+        foreach(get_object_vars($this->_original) as $key => $value)
+        {
+            //$this->$key != $value  精髓在这！  我们上边讲过$this->_original->retrieve($this->id) 调取了继承该基类model模型里面的retrieve()方法进行检索验证  此时又一次的为成员属性赋值； 那么我们这里的get_object_vars()传递了一个对象进去 那么遍历出来的也就是我们上边再次赋值给成员属性的值  但是我们在user模型里面$this->uc->name = "胡绍良"; 又认为的设置了name的值 那么这里判断$this->$key != $value 那么我们单独设置$this->uc->name = '胡绍良'也就是成立的！
+            if ((property_exists($this, $key)) && (!is_object($this->$key)) && (!is_array($this->$key)) &&
+                (substr($key, 0, 1) != '_') && ($this->$key != $value) && ($key != "updatetime"))
+            {
+                $this->_update_fields[$key] = $this->$key;//这里的$this->$key的值也就是我们在控制器当中$this->uc->name = "hushaoliang"重新设置的值；
+            }
+        }
+
+        //说白了$this->_update_fields 其实就是我们需要改变的字段的值的数组集合 hsl
+
+
+        return true;
+    }
+
+D:
+删除数据
+使用方法：$id表示要删除的记录的id值；
+$this->goods->retrieve($id);   //主要是为$this->id 赋值；当然还有其他成员属性
+$this->goods->delete()；
+
+必须要是实现的方法：
+prepare_delete（）；//前置操作
+post_detele（）；//后置操作
