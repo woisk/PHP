@@ -1,0 +1,819 @@
+1.
+3秒之后跳转到某个地址：
+header("refresh:3;url='http://www.baidu.com'");
+
+eage:
+<?php
+class hushaoliang{
+    public function aa(){
+        echo "3秒之后会跳转!";
+        header("refresh:3;url='http://www.baidu.com'");
+    }
+}
+$aaa = new hushaoliang;
+$aaa->aa();
+?>
+------------------------------------------------------------------------
+2.
+{$val}这时候大括号起的作用就是，告诉PHP，括起来的要当成变量处理
+------------------------------------------------------------------------
+
+3.
+$GLOBALS['config'] = "hushaoliang";   超全局数组变量；
+------------------------------------------------------------------------
+
+4.
+define("DS",DIRECTORY_SEPARATOR);                 // \
+
+------------------------------------------------------------------------
+
+5.
+header("refresh:4;url=$url");  多少秒之后自动刷新跳转到制定的地址上去；
+------------------------------------------------------------------------
+
+6.
+dirname(__FILE__) 获取当前路径的目录部分；
+__FILE__表示当前文件的绝对路径  dirname表示获取路径的目录部分
+------------------------------------------------------------------------
+
+7.
+拒绝访问：
+exit('Access denied');
+
+ege:
+
+if(2>1){
+    exit('Access denied');
+}else{
+    echo "333";die;
+}
+------------------------------------------------------------------------
+
+8.
+中间是或者的关系 表示如果前边不成立那么执行后边的也就是拒绝访问；
+defined('HAPPY_TEA_ROOT') || exit('Access denied');
+------------------------------------------------------------------------
+
+9.
+获取php版本 如果太低 直接die掉提示版本太低
+if(@version_compare(PHP_VERSION, '5.2.0', '<')) {
+   die('您的PHP版本不支持！');
+------------------------------------------------------------------------
+}
+
+10.
+// 设置时区
+date_default_timezone_set('PRC');
+------------------------------------------------------------------------
+
+11.
+获取两个数组共同的部分
+$myCFG = Array ( [dbhost] => 127.0.0.1 [dbuser] => root [dbpwd] => root [dbname] => tea [charset] => utf8 [pconnect] => 0 [tbprefix] => happy_ )
+$CFG = Array ( [dbhost] => 127.0.0.1 [dbuser] => root [dbpwd] => root [dbname] => tea [charset] => utf8 [pconnect] => 0 )
+通过键名来比较两个数组的交集部分 并且返回一个数组是这两个数组的交集； 就用以下方法：
+array_intersect_key($myCFG, $CFG);  //注意数组的前后顺序；
+------------------------------------------------------------------------
+12.
+一个一维的关联数组  我们可以通过extract()方法来直接把数组当中的键名称座位变量名称 键值作为变量的值输出；
+$myCFG = Array ( 'dbhost' => '127.0.0.1', 'dbuser' => 'root', 'dbpwd' => 'root' ,'dbname' => 'tea', 'charset' => 'utf8', 'pconnect' => 0 ,'tbprefix' => 'happy_' );
+extract($myCFG);
+echo $dbuser;
+------------------------------------------------------------------------
+13.
+数据库报错1045  说明用户名或者密码错误
+------------------------------------------------------------------------
+14.
+数据库报错2202说明是找不到数据库  或者说数据库不存在
+------------------------------------------------------------------------
+15.
+我们在访问域名的时候如果提示 open_basedir说明代码当中的路径有问题，是php访问路径权限的问题；
+------------------------------------------------------------------------
+16.
+把相对路径转换成绝对路径：
+realpath("../aa/bb");
+------------------------------------------------------------------------
+17.
+?   笔记本谷歌浏览器已经收藏了该解释  
+set_include_path();
+set_include_path()这个函数是在脚本里面动态的去对php.ini中的include_path进行修改，而这个include_path 它可以针对下面的include和require的路径范围进行限定，或者说是预定义一下；
+比如：
+include("123/text1.php");
+include("123/text2.php");
+include("123/text3.php");
+include("123/text4.php");
+include("123/text5.php");
+但是这样比较麻烦 我们通常会这么写：
+set_include_path("123/");
+include(" .php");
+include("text2.php");
+其实就是起到了一个预定义的作用一样；
+
+------------------------------------------------------------------------
+18.
+call_user_func(array($this, $method_name),$value)
+ege:
+
+<?php
+
+class myclass {
+    static function say_hello()
+    {
+        echo "Hello!\n";
+    }
+}
+
+$classname = "myclass";
+
+call_user_func(array($classname, 'say_hello'));
+call_user_func($classname .'::say_hello'); // As of 5.2.3
+
+$myobject = new myclass();
+
+call_user_func(array($myobject, 'say_hello'));
+
+?>
+------------------------------------------------------------------------
+19.
+isset()  有两个参数；
+ege:
+$a = "hushaoliang";
+$b = "lijinjinhushaoliang";
+isset($a,$b);返回的是true 如过没有$a 那么返回的是false;
+------------------------------------------------------------------------
+20.
+下边来讲一下php的异常处理：
+
+正常情况下的php异常处理：
+<?php
+//在 "try" 代码块中触发异常
+try
+ {
+
+ if(2>1)
+  {
+    throw new Exception("Value must be 1 or below");      //如果2>1成立 那么这里规定了如何触发异常； 每一个 "throw" 必须对应至少一个 "catch";
+  }
+
+ echo 'If you see this, the number is 1 or below';
+
+ }
+
+//捕获异常
+catch(Exception $e)
+ {
+    //我们上边throw new Exception() 规定用Exception来触发异常 那么这里也要写对应的Exception;
+
+ echo 'Message: ' .$e->getMessage();            //正常情况下 上边有throw 那么这里必须要有catch对应；代码块会捕获异常，并创建一个包含异常信息的对象$e;     
+ echo $e->getFile();  //错误所在文件
+ echo $e->getLine();  //错误所在的行数
+ }
+?>
+
+
+
+
+
+自定义类文件来抛出异常错误：
+<?php
+
+//我们在这里自定义一个类 让他继承php当中能够的Exception  在里面写了一个方法；
+class customException extends Exception
+ {
+ public function errorMessage()
+  {
+  //error message
+  $errorMsg = 'Error on line '.$this->getLine().' in '.$this->getFile()
+  .': <b>'.$this->getMessage().'</b> is not a valid E-Mail address';
+  return $errorMsg;
+  }
+ }
+
+// $this->getLine()  获取错误在第几行
+// $this->getFile()  获取错误所在的文件；
+// $this->getMessage()  获取错误的具体信息
+
+
+$email = "someone@example...com";
+
+try
+ {
+ //check if 
+ if(filter_var($email, FILTER_VALIDATE_EMAIL) === FALSE)
+  {
+  //throw exception if email is not valid
+  throw new customException($email);      //条件成立 来规定用哪个触发；
+  }
+ }
+
+//catch括号当中写的是throw的时候的类名称；
+catch (customException $e)
+ {
+ //display custom message
+ echo $e->errorMessage();  //调取类里面的方法抛出错误信息；               
+ }
+
+
+在PDO当中的使用：
+
+class customException extends Exception
+ {
+   public function __construct__($message = null){
+       echo $message;
+   }
+ }
+
+//正常的PDO操作
+try{
+
+    $dsn = "mysql:host=localhost;port=3306;dbname=zuixin";
+    $opt = array(PDO::MYSQL_ATTR_INIT_COMMAND=>'set names utf8');
+    $pdo = new PDO($dsn,'root2','root',$opt);
+    $pdo->setAttribute(PDO::ATTR_ERRMODE,PDO::ERRMODE_EXCEPTION);
+    
+}catch(PDOException $e){
+
+    //按照常理来说我们会在这里$e->getMessage();抛出错误信息  但是我们在这里可以通过thorw规定实例化某个类 然后去做其他的操作 比如存日志到数据库当中去； 但是不是PDO当中的就不行，因为正常情况下try当中报错了不会自动在catch当中获取到；但是PDO就可以；
+
+    throw new customException($e->getMessage());
+
+}
+
+$data = $pdo->prepare("select * from ocenter_member where uid= :bianhao or uid = :haoma");
+$data->execute(array('bianhao'=>1,'haoma'=>1008));
+$data->setFetchMode(PDO::FETCH_ASSOC);
+$arr = $data;
+$array = $arr->fetchAll();
+print_r($array);die;
+
+?>
+------------------------------------------------------------------------
+21.
+
+异常错误抛出的实际应用
+
+<?php
+
+//我们在这里自定义一个类 让他继承php当中能够的Exception  在里面写了一个方法；
+class customException extends \Exception
+ {
+    public function  __construct($flag,$message){
+        parent::__construct($message);
+    }
+ }
+/*
+*正常情况下我们都会使用try  catch 直接来抛出错误  但是这里有了另外的一种写法 也是自定义一个异常错误类 让这个类继承php当中自带的Exception这个类，当if当中的条件成立的时候那么就会触发throw 来选择custonException类来触发异常，custonException("填写错误信息 也可以传递两个或者三个更多的变量过去")   然后在custonException类里面因为我们继承了Excetion()方法，所以会自动的给我们抛出错误信息； 当然我们最好是继承父类里面的构造函数；习惯而已；
+*excetion后边跟的是通过哪个类抛出的错误     message后边跟的是我们所抛出的错误信息；  后边就是具体发生在哪一行；
+*stack trace 表示因为这个错误 哪些地方受到了牵扯；
+Fatal error: Uncaught exception 'customException' with message 'xiix' in F:\UPUPW_AP5.3\htdocs\lianxi\index.php:23 
+Stack trace: #0 {main} thrown in F:\UPUPW_AP5.3\htdocs\lianxi\index.php on line 23
+*/
+
+ if(1)
+  {
+  //throw exception if email is not valid
+  throw new customException("wahahahah",'xiix');
+  }
+
+ ?>
+------------------------------------------------------------------------
+22.
+global的使用
+<?php
+require "core_common.php";//在这个文件当中能够包含了$_HTC变量；是一个数组；
+Game::application();我们调取Game类里面的一个方法  那么我们在这个类的构造方法当中或者在某个方法当中必须global $_HTC;让他变成全局的才能够使用；
+?>
+------------------------------------------------------------------------
+23.
+<?php
+$a = 1;
+include 'b.inc';
+?>
+这里变量 $a 将会在包含文件 b.inc 中生效。
+------------------------------------------------------------------------
+24.
+
+namespace 命名空间的使用方法：
+
+A:第一种就是通过include的形式 直接引入类文件 但是有需要注意的事项
+<?php
+namespace  application\platform\mmc
+require dirname(__FILE__)."wahaha.php";  //所包含的类里面不能存在命名空间  但是可以用use
+class hushaoliang(){
+    $aa = new \wahaha(); 
+}
+主要是用来解决常量 函数 类的重名的问题
+规定了命名空间 那么所有的操作都要在这个规定了的命名空间目录下进行 比如new  aa()  那么这个aa类文件一定是在mmc这个目录下的类文件；
+但是如果想要使用引入进来的类进行实例化成为对象  那么必须要先跳出这个命名空间目录才行  所以也就有了这里的
+new \wahaha();这样的写法；
+
+
+
+B:第二种就是直接实例化（ 两个类文件都处在相同的目录下的情况这是）
+假设第一个类是
+<?php
+namespace application\controllers;
+//注意 这里的wa只能是单纯的wa 而不是像Yii当中的那样 WaControler extends Controler{}
+class wa{
+
+}
+?>
+
+第二个类当中需要用到第一个类  那么做法就是
+<?php
+namespace application\controllers;
+use Yii;
+use yii\web\Controller;
+
+这里也不用use了    因为他们都属于同一个命名空间之下  那么直接new第一个类就管用；
+
+class BbControler extends Controller{
+    new wa();
+}
+?>
+
+
+C：处在不同的目录下；并且被引入的用到的实例化的类有命名空间；那么首先得require引入这个类，然后use一下被引入的类的命名空间\该类文件的名称；
+这样才能new 实例化该类；
+
+<?php
+namespace backend\controllers;
+
+require dirname(dirname(dirname(__FILE__))).'/'.'hu/hushaoliang.php';
+use hu\hushaoliang;
+
+class ProductController extends Controller{
+  
+    //商品添加操作
+    public function actionAdd(){
+
+        $a = new Hu;
+        $a->Ax();
+    }
+}
+
+
+?>
+------------------------------------------------------------------------
+25.
+http_build_query()常见用法：
+例子 1. http_build_query() 使用示例
+
+<?php 
+$data = array('foo'=>'bar', 
+              'baz'=>'boom', 
+              'cow'=>'milk', 
+              'php'=>'hypertext processor'); 
+echo http_build_query($data); 
+/* 输出： 
+       foo=bar&baz=boom&cow=milk&php=hypertext+processor 
+*/ 
+?>
+
+例子 2. http_build_query() 使用数字下标的元素
+
+<?php 
+$data = array('foo', 'bar', 'baz', 'boom', 'cow' => 'milk', 'php' =>'hypertext processor'); 
+echo http_build_query($data); 
+/* 输出： 
+       0=foo&1=bar&2=baz&3=boom&cow=milk&php=hypertext+processor 
+*/ 
+echo http_build_query($data, 'myvar_'); 
+/* 输出： 
+       myvar_0=foo&myvar_1=bar&myvar_2=baz&myvar_3=boom&cow=milk&php=hypertext+processor 
+*/ 
+?>
+?>
+------------------------------------------------------------------------
+26.
+parse_url()函数的用法
+把完成的url拆分 
+
+<?php
+
+    $url = "http://www.nowamagic.net/welcome/";
+
+    $parts = parse_url($url);
+
+    print_r($parts);
+
+?>
+程序运行结果如下：
+Array ( [scheme] => http [host] => www.nowamagic.net [path] => /welcome/ )
+------------------------------------------------------------------------
+27.
+判断一个类当中是否存在某个方法的函数：
+is_callable(array($a,$b));  判断$a类当中是否存在$b方法；
+
+<?php
+class test {
+   static function a() {
+      return "test";
+   }
+}
+class abc {
+   public function a($Object,$funcName){  
+      if (!is_callable(array($Object,$funcName))){//此处array($object,$funcname)的用法，相当于$object::$funcname调用$object的$funcname方法
+         echo("Error");
+      }else {
+         echo("OK");
+      }
+   }
+}
+ 
+$abc=new abc();
+$abc->a("test","aa");//test类下没有aa方法，会输出error
+$abc->a("test","a");//test类下有a方法,会输出ok
+?>
+------------------------------------------------------------------------
+28.
+ method_exists($this,$b)检测类的方法是否存在；
+ ------------------------------------------------------------------------
+ 29.
+ 时间戳：
+ strtotime(date('Y-m-d'))   获取当前时间的时间戳 格式为时间戳格式；
+ date('Y-m-d')    2017/3/21
+ time();当前时间的时间戳
+ date('Y-m-d',strtotime("+1 day"));  此刻的时间加一天的时间；也就是第二天的这个时候
+ strtotime('+1 day'); 明天的这个时候的时间戳;
+ strtotime('+1 week');打印下周此刻的时间戳;
+
+ 看着吧：
+ PHP时间戳函数获取英文文本日期时间 
+便于比较，使用date将当时间戳与指定时间戳转换成系统时间
+(1)打印明天此时的时间戳strtotime(”+1 day”)
+当前时间：echo date(”Y-m-d H:i:s”,time()) 结果：2009-01-22 09:40:25
+指定时间：echo date(”Y-m-d H:i:s”,strtotime(”+1 day”)) 结果：2009-01-23 09:40:25
+(2)打印昨天此时的时间戳strtotime(”-1 day”)
+当前时间：echo date(”Y-m-d H:i:s”,time()) 结果：2009-01-22 09:40:25
+指定时间：echo date(”Y-m-d H:i:s”,strtotime(”-1 day”)) 结果：2009-01-21 09:40:25
+(3)打印下个星期此时的时间戳strtotime(”+1 week”)
+当前时间：echo date(”Y-m-d H:i:s”,time()) 结果：2009-01-22 09:40:25
+指定时间：echo date(”Y-m-d H:i:s”,strtotime(”+1 week”)) 结果：2009-01-29 09:40:25
+(4)打印上个星期此时的时间戳strtotime(”-1 week”)
+当前时间：echo date(”Y-m-d H:i:s”,time()) 结果：2009-01-22 09:40:25
+指定时间：echo date(”Y-m-d H:i:s”,strtotime(”-1 week”)) 结果：2009-01-15 09:40:25
+(5)打印指定下星期几的时间戳strtotime(”next Thursday”)
+当前时间：echo date(”Y-m-d H:i:s”,time()) 结果：2009-01-22 09:40:25
+指定时间：echo date(”Y-m-d H:i:s”,strtotime(”next Thursday”)) 结果：2009-01-29 00:00:00
+(6)打印指定上星期几的时间戳strtotime(”last Thursday”)
+当前时间：echo date(”Y-m-d H:i:s”,time()) 结果：2009-01-22 09:40:25
+指定时间：echo date(”Y-m-d H:i:s”,strtotime(”last Thursday”)) 结果：2009-01-15 00:00:00
+
+------------------------------------------------------------------------
+
+30.
+array_unique($a);  去除数组当中重复的部分；
+<?php
+$a=array("a"=>"red","b"=>"green","c"=>"red");
+print_r(array_unique($a));
+?>
+------------------------------------------------------------------------
+
+31.
+/**
+ * 是否为夜晚
+ * @author hushaoliang
+ * $time为当前时间戳
+ */
+function htg_isNight($time) {
+   if (empty($time)) {
+      return false;
+   }
+   $hour = date('G', $time);
+   //下午16点到第二天的凌晨七点之间 算作为夜晚 返回true  否则返回false算作是白天
+   if (7 > $hour or 16 < $hour) {
+      return true;
+   }else {
+      return false;
+   }
+}
+------------------------------------------------------------------------
+
+32.
+array_slice();
+$a = array('red','yellow','blue','green','brown');
+$b = array_slice($a,0,3);
+表示从$a数组当中从第一个开始往后截取3个元素并且返回；
+------------------------------------------------------------------------
+
+33.
+如何查看数据库的引擎是什么类型的？
+一般情况下，mysql会默认提供多种存储引擎,你可以通过下面的查看:
+看你的mysql现在已提供什么存储引擎:
+mysql> show engines;
+看你的mysql当前默认的存储引擎:
+mysql> show variables like '%storage_engine%';
+------------------------------------------------------------------------
+
+34.
+
+数据库查询当中的left join 左链接
+SELECT
+   ui.`username`,
+   ui.`money`,
+   uf.`username`,
+   uf.`email`,
+           cs.`username` as un
+FROM
+   happy_tea_ui AS ui
+LEFT JOIN 
+happy_tea_userinfo AS uf 
+ON ui.`uid` = uf.`uid`
+LEFT JOIN
+happy_tea_ceshi as cs
+ON uf.`outkey` = cs.`outkey`
+WHERE
+   ui.`uid` = 7616;
+
+
+------------------------------------------------------------------------
+
+35.
+有时候我们需要自己写json数据往前端传递 下边就是个很好的例子：（总结道原生知识点当中去）
+               $str = '';
+            $str .= '[';
+            $str .= '{"作物类型":"'.$seeds[$seedid]['ct'].'"}';
+            $str .= ',{"成熟时间":"'.$htime[0].'小时"}';
+            $str .= ',{"再次成熟":"'.$htime[1].'小时"}';
+            $str .= ',{"预计产量":"'.$seeds[$seedid]['o'].'"}';
+            $str .= ',{"果实单价":"'.$seeds[$seedid]['fp'].'"}';
+            $str .= ',{"预计收入":"'.$seeds[$seedid]['fp'] * $seed[$seedid]['s'] * $seed[$seedid]['o'].'"}';
+            $str .= ',{"收获经验":"'.$seeds[$seedid]['e'].'/季"}';
+            $str .= ',{"作物等级":"'.$seeds[$seedid]['l'].'"}';
+            $str .= ']';
+------------------------------------------------------------------------
+
+36.
+将时间戳转换为天，小时，分钟，秒  （总结道原生知识点当中去 拿过来直接用就行）
+     * @param integer $time     时间戳
+     * @param string $format    精度[d:天,h:小时,i:分钟,s:秒]
+     * @return string $rtn
+     * @author quxiaobo
+     */
+    protected function _getDatetime($time, $format='s') {
+        $data = array();
+        $rtn = '';
+        if (0 == $time) {
+            return ;
+        }
+        if (0 > $time) {
+            return '无限期';
+        }
+        // 一天 = 24*60*60
+        $data['d'] = 0;
+        $data['d'] = floor($time / 86400);
+        if ('d' == $format) {
+            $rtn .= $data['d'].'天';
+            return $rtn;
+        }
+        // 一小时 = 60*60
+        $data['h'] = 0;
+        //
+        $data['h'] = floor(($time - $data['d']*86400) / 3600);
+        if ('h' == $format) {
+            if (0 != $data['d']) {
+                $rtn .= $data['d'].'天';
+            }
+            if (0 != $data['h']) {
+                $rtn .= $data['h'].'小时';
+            }
+            return $rtn;
+        }
+        // 一分钟 = 60
+        $data['i'] = 0;
+        $time = $time - $data['d']*86400 - $data['h']*3600;
+        $data['i'] = floor($time / 60);
+        if ('i' == $format) {
+            if (0 != $data['d']) {
+                $rtn .= $data['d'].'天';
+            }
+            if (0 != $data['h']) {
+                $rtn .= $data['h'].'小时';
+            }
+            if (0 != $data['i']) {
+                $rtn .= $data['i'].'分钟';
+            }
+            return $rtn;
+        }
+        // 秒
+        $data['s'] = 0;
+        $data['s'] = $time - $data['i']*60;
+        if (0 != $data['d']) {
+            $rtn .= $data['d'].'天';
+        }
+        if (0 != $data['h']) {
+            $rtn .= $data['h'].'小时';
+        }
+        if (0 != $data['i']) {
+            $rtn .= $data['i'].'分钟';
+        }
+        if (0 != $data['s']) {
+            $rtn .= $data['s'].'秒';
+        }
+        return $rtn;
+    }
+
+------------------------------------------------------------------------
+
+37.
+判断是否为夜晚的函数 （总结道原生知识点当中去 拿过来直接用就行）
+/**
+* 是否为夜晚
+* 为夜晚返回true  为白天返回false;
+*/
+function htg_isNight($time) {
+    if (empty($time)) {
+        return false;
+    }
+    $hour = date('G', $time);
+    if (7 > $hour or 16 < $hour) {
+        return true;
+    }else {
+        return false;
+    }
+}
+------------------------------------------------------------------------
+
+38.
+
+传递进去时间戳获取到具体的时间（总结道原生知识点当中去 拿过来直接用就行）
+/**
+* 获得时间
+* */
+function htg_getTime($time, $format='H:i') {
+    if (empty($time)) {
+        return '';
+    }
+    return date($format, $time);
+}
+
+------------------------------------------------------------------------
+
+39.
+随机产生6位的英文字母：
+$re = "";
+$arr = "zxcvbnmsdfghjklqwertyuiopZXCVBNMASDFGHJKLQWERTYUIOP";
+while(strlen($re) < 6){
+   $re .= $arr[rand(0,strlen($arr)-1)];
+}
+------------------------------------------------------------------------
+40.
+随机产生字符串的函数:
+uniqid（）
+------------------------------------------------------------------------
+
+41.
+YII当中学到的第二种加密的方法：
+base64_encode(‘hushaoliang’)
+------------------------------------------------------------------------
+
+42.
+session在服务端存储的时间以及回收机制发生的概率问题：
+
+概述：每一次php请求，会有1/100的概率（默认值）触发“session回收”。如果“session回收”发生，那就会检查/tmp/sess_*的文件，如果最后的修改时间到现在超过了1440秒（gc_maxlifetime的值），就将其删除，意味着这些session过期失效。 
+
+A. session在端（一般是 with PHP module）如何存在的？ 
+
+默认的，php会将session保存在/tmp目录下，文件名为这个样子：sess_01aab840166fd1dc253e3b4a3f0b8381。每一个文件对应了一个session（会话）。 
+more /tmp/sess_01aab840166fd1dc253e3b4a3f0b8381 
+username|s:9:”jiangfeng”;admin|s:1:”0″; 
+#变量名|类型:长度:值 
+
+删除这里的session文件，就表示对应的session失效了。 
+
+B. session在client端（一般是浏览器）如何存在的？ 
+
+session在浏览器端，只需要保存session ID（由server端生成的唯一ID）就可以了。有两种保存方式：在cookie中、在url里面。如果cookie中保存session ID，就可以看到浏览器的cookie中有一个PHPSESID变量。如果是URL传递的，就可以看到形如: 
+index.php?PHPSESID=01aab840166fd1dc253e3b4a3f0b8381的URL。（在server端通过session.use_cookies来控制使用哪一种方式） 
+
+C. 在server端，php如何判断session文件是否过期？ 
+
+如果”最后的修改时间”到”现在”超过了gc_maxlifetime（默认是1440）秒，这个session文件就被认为是过期了，在下一次session回收的时候，如果这个文件仍然没有被更改过，这个session文件就会被删除（session就过期了）。 
+
+简单的说，如果我登录到某网站，如果在1440秒（默认值）内没有操作过，那么对应的session就认为是过期了。 
+
+所以，修改php.ini文件中的gc_maxlifetime变量就可以延长session的过期时间了：（例如，我们把过期时间修改为86400秒） 
+session.gc_maxlifetime = 86400 
+
+然后，重启你的web服务（一般是apache）就可以了。 
+
+注意：php5里面session过期使用了回收机制。这里设置时间为86400秒，如果session在86400秒内没有被修改过，那么在下一次“回收”时才真的被删除。 
+
+D. session“回收”何时发生？ 
+
+默认情况下，每一次php请求，就会有1/100的概率发生回收，所以可能简单的理解为“每100次php请求就有一次回收发生”。这个概率是通过以下参数控制的 
+#概率是gc_probability/gc_divisor 
+session.gc_probability = 1 
+session.gc_divisor = 100 
+
+注意1：假设这种情况gc_maxlifetime=120，如果某个session文件最后修改时间是120秒之前，那么在下一次回收（1/100的概率）发生前，这个session仍然是有效的。 
+
+注意2：如果你的session使用session.save_path中使用别的地方保存session，session回收机制有可能不会自动处理过期session文件。这时需要定时手动（或者crontab）的删除过期的session：cd /path/to/sessions; find -cmin +24 | xargs rm 
+
+------------------------------------------------------------------------
+
+43.
+str_repeat('----'，5); 重复五次----这样的字符串；
+------------------------------------------------------------------------
+
+学习CI时候的源码当中的总结：
+44.
+strcasecmp('hushaoliang','lijinjii');
+不区分大小写哦！
+判断两个字符串是否相同  如果相同返回的是0
+<0 - 如果 string1 小于 string2
+>0 - 如果 string1 大于 string2
+
+strpos('hushaoliang','h'); h在hushaoliang当中第一次出现的位置为0
+
+substr('hushaoliang',0,1);  截取字符串  在hushaoliang 当中 从0开始截取1个也就是第一个是h 
+------------------------------------------------------------------------
+
+45.
+get_object_vars()
+这个函数的意思就是把对象里面的属性作为键 值为值  返回一条一维数组形式的结果；   并且传递进去的必须是一个一位数组形式的对象记录！  也可以传递一个实例化好了的类进去：
+foreach(get_object_vars($this->_original) as $key => $value){}   $this->_original 表示实例化好了的类 也可以传递一个一位对象数组记录进去
+------------------------------------------------------------------------
+
+46.
+property_exists($this,$k)  判断当前类当中是否存在$k属性
+is_object($k); 判断当前$k是否是对象
+isEmpty()判断是否为空！
+get_class($this) 返回对象的类名
+
+------------------------------------------------------------------------
+47.
+trigger_error() 函数
+可以设置用户级别的错误信息
+<?php
+ if ($usernum>10) {
+     trigger_error("Number cannot be larger than 10");
+ }
+ ?> 
+
+以上代码的输出类似这样：
+Notice: Number cannot be larger than 10
+ in C:\webfolder\test.php on line 6
+------------------------------------------------------------------------
+48.
+echo $_SERVER['DOCUMENT_ROOT'];//输出服务器根目录
+------------------------------------------------------------------------
+49.
+json_decode();如果传递一个json字符串进去 那么
+
+json_decode()返回的是对象数组
+json_decode($arr,TRUE) 那么返回的是数组形式的
+------------------------------------------------------------------------
+50.
+通过scandir()方法读取出一个目录下的所有的文件  返回数组格式！
+//测试遍历目录结构
+//有时候我们需要将一个目录下的所有的文件遍历出来 比如在home/app/music目录下存放着很多的音乐 那么我们可以通过一个函数来读取出music目录下的所有			       的文件的名称；并且是数组形式返回！
+    public function getdir()
+    {
+        $rooturl =  $_SERVER['DOCUMENT_ROOT'];//输出服务器根目录  /home/bae/app/
+        /*通过scandir()返回的数组格式如下：
+         * Array
+                (
+                    [0] => .
+                    [1] => ..
+                    [2] => 品冠 - 还好有你.mp3
+                    [3] => 末小皮 - 单身请举手.mp3
+                    [4] => 王矜霖 - 没关系.mp3
+                    [5] => 钟汉良 - 何以爱情.mp3
+                )
+         * */
+        $file = scandir($rooturl."music");
+        /*  
+        * 接下来我们将剔除.和..  并且返回文件名称  当然我们也可以返回完成的文件存放的路径
+        1 品冠 - 还好有你.mp3
+        2 末小皮 - 单身请举手.mp3
+        3 王矜霖 - 没关系.mp3
+        4 钟汉良 - 何以爱情.mp3
+        * 
+        * 
+        * */
+        $i = 1;
+        $str = "欢迎来到点歌系统";
+        foreach($file as $k=>$v){
+            if($v != '.' && $v != '..'){
+                $str .= $i.' '.$v."\n";
+                $i++;
+            }
+        }
+        print_r($str);
+
+    }
+------------------------------------------------------------------------
+
+51.
+join()方法的使用：
+把数组转变成字符串  除了使用implode()方法之外 我们还可以使用join()方法；
+ public function joinTest()
+    {
+        $array = array('hushaoliang','lijinjin','zhangfan');
+        $str = join($array);
+        print_r($str);die;
+    }
+------------------------------------------------------------------------
+
+52.
