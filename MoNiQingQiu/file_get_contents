@@ -1,0 +1,19 @@
+当然我们也可以使用curl来进行get模拟请求! 自己去百度吧！
+大家都知道  我们在开发的时候难免会遇到请求外部的某个接口从而来获取到想要的数据，这里我们就讲讲如何已get的形式来请求某个接口来获取数据；
+file_get_contents()的其他的含义我们就不再遨诉；
+//测试curl  get 和 post 请求
+    public function ceshiCurl()
+    {
+//这个地方在请求的时候最好是写上外网的地址http://www.^^^^^
+        $content = file_get_contents('http://hushaoliang.duapp.com/index.php/welcome/textcurl',TRUE);
+        print_r($content.'111111111111');die;
+    }
+
+那么我们来看一下请求的这个地址的方法该怎么来写呢？
+    public function textCurl()
+    {
+     //这个地方一定是要输出的  因为file_get_contents()是获取到返回回来的内容  使用return是不起作用的 ！
+      echo "恩恩你来了啊!";
+    }
+
+切记 file_get_contents()只适合get形式的传参!
